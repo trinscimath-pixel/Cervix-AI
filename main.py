@@ -47,21 +47,27 @@ def home():
 # ==========================
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-image_bytes = await file.read()
+    image_bytes = await file.read()
+
     image = Image.open(
         io.BytesIO(image_bytes)
     ).convert("RGB")
+
     x = transform(image).unsqueeze(0)
+
     with torch.no_grad():
         outputs = model(x)
         probs = torch.softmax(outputs, dim=1)[0]
+
     result = {
         class_names[i]: float(probs[i])
         for i in range(5)
     }
+
     prediction = class_names[
         torch.argmax(probs).item()
     ]
+
     return {
         "prediction": prediction,
         "probabilities": result
