@@ -4,7 +4,9 @@ import io
 import torch
 import timm
 from torchvision import transforms
+
 app = FastAPI(title="CerviVision AI API")
+
 # ==========================
 # Model
 # ==========================
@@ -13,10 +15,13 @@ model = timm.create_model(
     pretrained=False,
     num_classes=5
 )
+
 model.load_state_dict(
     torch.load("model.pth", map_location="cpu")
 )
+
 model.eval()
+
 # ==========================
 # Classes
 # ==========================
@@ -27,6 +32,7 @@ class_names = [
     "HSIL",
     "SCC"
 ]
+
 # ==========================
 # Transform
 # ==========================
@@ -34,6 +40,7 @@ transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
+
 # ==========================
 # Home
 # ==========================
@@ -42,6 +49,7 @@ def home():
     return {
         "message": "CerviVision AI API is running"
     }
+
 # ==========================
 # Prediction Endpoint
 # ==========================
@@ -72,3 +80,4 @@ async def predict(file: UploadFile = File(...)):
         "prediction": prediction,
         "probabilities": result
     }
+ 
