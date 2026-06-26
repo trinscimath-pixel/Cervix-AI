@@ -2,37 +2,33 @@ from fastapi import FastAPI, UploadFile, File
 from PIL import Image
 import io
 import torch
-import timm
+from torchvision import models
+import torch.nn as nn
 from torchvision import transforms
-
 app = FastAPI(title="CerviVision AI API")
-
 # ==========================
 # Model
 # ==========================
-model = timm.create_model(
-    "vit_base_patch16_224",
-    pretrained=False,
-    num_classes=5
-)
+model = models.mobilenet_v3_large(weights=None)
 
+model.classifier[3] = nn.Linear(
+    model.classifier[3].in_features,
+    5
+)
 model.load_state_dict(
     torch.load("model.pth", map_location="cpu")
 )
-
 model.eval()
-
 # ==========================
 # Classes
 # ==========================
 class_names = [
-    "NILM",
     "ASC-US",
-    "LSIL",
     "HSIL",
+    "LSIL",
+    "NILM",
     "SCC"
 ]
-
 # ==========================
 # Transform
 # ==========================
@@ -40,7 +36,6 @@ transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
-
 # ==========================
 # Home
 # ==========================
@@ -49,7 +44,6 @@ def home():
     return {
         "message": "CerviVision AI API is running"
     }
-
 # ==========================
 # Prediction Endpoint
 # ==========================
@@ -80,4 +74,3 @@ async def predict(file: UploadFile = File(...)):
         "prediction": prediction,
         "probabilities": result
     }
- 
